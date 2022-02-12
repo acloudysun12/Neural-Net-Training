@@ -1,0 +1,468 @@
+---
+title: "Neural_Net_Basics"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+### Review of a Derivative
+
+**Question !** <br>
+What is the derivative of the function $f(x) =  3x$ with respect to (w.r.t.) $x$?
+
+**Question !** <br>
+What is the derivative of the function $f(x) =  3x^2$ w.r.t. $x$?
+
+**Question !** <br>
+What does the derivative signify? 
+
+<br>
+<br>
+<br>
+<br>
+
+### Review of the Chain Rule (in 1-Dimension)
+
+Again, let $f(x) =  3x^2$. <br>
+But now, let x itself be a function which depends on another variable $y$. <br>
+Suppose this function is $x = \frac{1}{2}y$ <br>
+
+**Question !** <br>
+First, verify that if you substitute in $\frac{1}{2}y$ for $x$ into the initial equation $f(x)$, 
+then take the derivative w.r.t. $y$, you get $\frac{df}{dy} = \frac{3}{2}y$ <br>
+
+The **Chain Rule** states the following: <br>
+For some function $f$ depending on $x$, which itself is a function which depends on $y$, then ... 
+$$ 
+\frac{df}{dy} = \frac{df}{dx} \frac{dx}{dy}
+$$
+
+**Question !** <br>
+Use the Chain Rule to verify that $\frac{df}{dy} = \frac{3}{2}y$.
+
+<br>
+<br>
+<br>
+<br>
+
+### Review of the Chain Rule (in Multi-Dim) 
+
+We will now verify the multi-variable/multi-dimension version of the Chain Rule with an example. <br>
+This is needed to solve problems related to the Back-Propagation Algorithm later on. <br>
+
+Consider a function $f$ that depends on $x$ and $y$ as follows. <br>
+$f := f(x,y) = 3x^2 + y$ <br>
+
+Let $x$, $y$ both be functions of a variable $t$, $x(t) = 2t$ and $y(t) = t^2$. <br>
+
+Our goals is to solve for the derivative of $f$ w.r.t. $t$, aka $\frac{df}{dt}$. <br>
+
+**Question !** <br>
+First, "brute force" the calculation for $\frac{df}{dt}$ by first substituting $x$ and $y$ back into the original equation for $f$. <br>
+Then, take the derivative of $f$ w.r.t. $t$, aka $\frac{df}{dt}$. <br>
+Verify that you get $\frac{df}{dt} = 26t$
+
+The Chain Rule in Two Dimensions (can be extended to multiple) states the following: <br>
+For a function $f$ depending on $x$ and $y$, which themselves are both functions of $t$, then ... 
+$$ 
+\frac{df}{dt} = \frac{\partial f}{\partial x} \frac{dx}{dt} + \frac{\partial f}{\partial y} \frac{dy}{dt}
+$$
+
+**Question !!** <br>
+Use the Chain Rule in 2-D to verify the same result, $\frac{df}{dt} = 26t$. <br>
+Hint: after taking $\frac{\partial f}{\partial x}$, you are still left with an $x$ term. At this point, you can simply substitute $x$ in terms of $t$, since ultimately we want the derivative of $f$ w.r.t. $t$.
+
+<br>
+<br>
+<br>
+<br>
+
+### How Does Gradient Descent Work? 
+
+Gradient Descent (GD) is an iterative algorithm that allows us to "travel" down a curve/function until we reach a minimum. <br>
+In the ML context, we find GD applied to a cost function, since that is what we want to minimize 99% of the time. <br>
+At each step, GD tweaks our parameter in a certain way (i.e. a certain direction) such tha value of your cost function with the new (tweaked) parameter will be a little bit closer to the minimum of the cost function. <br>
+
+More formally, steps of GD in the ML context are as follows. Suppose we pick some initial random values for our parameter(s) $\theta$, and we use these parameter(s) to calculate the value of our cost function, $C(\theta|data)$. <br>
+
+1) To get closer to a minimum value of the cost function, we calculate the gradient of the cost function with respect to $\theta$. <br>
+2) Next, we then move our parameters a certain distance in the direction OPPOSITE that of the gradient. <br>
+3) Then, we repeat the step 1) and step 2), and so on... <br>
+
+Step 2) and 3) in math notation: $\theta_{new} = \theta_{old} - \alpha \nabla C(\theta_{old})$ <br>
+
+Note: $\alpha$ represents the magnitude of our move in the direction opposite the gradient. It is referred to as the "learning rate". <br>
+
+While we mainly care about GD in the above context, it is hard to picture how gradient descent works since cost functions are usually a function of many parameters, and each parameter adds a new dimension to the input of our cost function. <br>
+
+I find it helpful to understand how GD works in a single dimension, for a function that is not a cost function.
+
+```{r}
+x = seq(-4, 4, 0.25)
+plot(x, 0.5*x^2, type = "l")
+points(2, 2, pch = 16, cex = 1.5, col = "blue")
+abline(a = -2, b = 2, lty = "dashed", col = "blue")
+```
+
+Let $f(x) = \frac{1}{2}x^2$ <br>
+
+Assume that we are starting at the point $x = 2$. <br>
+
+**Question !** <br>
+What is the minimum of this function? <br>
+
+**Question !** <br>
+Set up GD for this function to find its minimum. <br>
+Hints: Think back to GD in the cost function context and try to find parallels here. <br>
+What is our "cost function"? It's the function whose value we want to minimize. That's just $f(x)$. <br>
+What is our "parameter"? It's the thing we tweak to get the minimum value of our function. So... $x$. <br>
+What is our "data"? Trick question :-) this is not a cost function, so there is no data. But if we really want to force the analogy, I guess we could say the "data" is just the $\frac{1}{2}$ and $[]^2$ parts. <br>
+
+**Question !** <br>
+The starting point is $x=2$. What is your initial function value? <br>
+
+**Question !!** <br>
+Let's run the GD algorithm for one step. What is your new parameter value? What is your new function value? <br>
+Assume a learning rate $\alpha$ of 0.5 for this question. <br>
+
+<br>
+
+Sometimes, it is helpful better grasp how something works by applying it outside of what we are familiar with. <br>
+I hope the exercises above accomplished this for Gradient Descent by showing how this algorithm works outside of our traditional ML lens. <br>
+
+<br>
+<br>
+<br>
+<br>
+
+### Digging Deeper with Gradient Descent (Optional)
+
+A common question asked is, "Why does GD tell us to move in the direction OPPOSITE the gradient?" <br>
+Specifically, why does the algorithm say $- \alpha \nabla C(\theta_{old})$ instead of $+\alpha \nabla C(\theta_{old})$ ? <br>
+
+The textbook answer is because "the gradient gives us a direction of steepest ascent". And since we want DESCENT, we subtract the gradient. <br>
+But that's unfulfilling if you ask me :-) <br>
+So intead, let's use a simple example to see the intuition behind this. <br>
+
+Same setup as before. Let $f(x) = \frac{1}{2}x^2$. Assume we start at $x = 2$, with a learning rate $\alpha = 0.5$. <br>
+
+**Question !** <br> 
+Suppose the math notation formula for GD is $x_{new} = x_{old} + \alpha \nabla f(x_{old})$. 
+Run GD for one step. What is your value of $x_{new}$ under this formula? <br>
+Pretend the math notation formula for GD is $x_{new} = x_{old} - \alpha \nabla f(x_{old})$.
+Run GD for one step. What is your value of $x_{new}$ under this formula? <br>
+
+**Question !** <br>
+Under which math notation formula do you get closer to the minimum? <br>
+
+**Question !!** <br>
+Based on your understanding of derivatives, think about what adding a derivative vs. subtracting a derivative means about how you are moving on the curve. <br>
+
+<br>
+<br>
+<br>
+<br>
+
+### Motivation for Stochastic Gradient Descent
+
+Stochastic gradient descent (SGD) is another very useful algorithm in ML. <br>
+At its core, SGD is just GD. <br>
+But instead of taking your full population of data to find the gradient with respect to your parameters $\theta$ at each step, it only takes a subset of data each time to update $\theta$. <br>
+This gives it a much higher computational efficiency and makes it a crucial foundation in building neural networks. Or until we have super-mega-ultra-quantum-squared computers, at least. <br>
+
+Let's movitvate its usefulness/efficiency through an example. <br>
+
+**Question !** <br>
+Suppose I give you 400 million and 1 observations of a random variable $X$. These sequence of observations goes from 1.98 up through 2.02 inclusive, with a step size of exactly 1E-10. <br>
+Using your previous statistics knowledge, what is your best guess for the true value of this random variable? <br>
+
+<br>
+
+You are a smart human. So this question was easily solvable despite the 400 million and 1 observations. <br>
+But now, imagine you are a machine (insert Bert Kreischer joke here). <br>
+Your cost function, the way you measure your performance (since you are a machine), is the squared error, i.e. $C(\hat{X}|data) = \sum_{i=1}^{400mm}(\hat{X} - X_i)^2$. <br>
+
+And you want to find the optimal value $\hat{X}$ that minimizes your cost function. <br>
+
+You start at a random guess for $\hat{X}$, say $\hat{X} = 20$. <br>
+
+**Question !!** <br>
+How many calculations do you need to perform to complete one iteration of the GD algorithm and update $\hat{X}$? (Order of magnitude is fine) <br>
+
+**Question !!** <br>
+Now, suppose you only chose a random subset of 400 points to calculate the cost function. <br>
+So now, your cost function is $C(\hat{X}|data) = \sum_{j=1}^{400}(\hat{X} - X_j)^2$, where $j$ is a subset of $i$. <br>
+How many calculations do you perform to complete one iteration of the GD algorithm and update $\hat{X}$? (Order of magnitude is fine). (Note: what you did here was SGD in a nutshell). <br>
+
+**Question !!** <br>
+Imagine a different scenario, where I gave you observations of a random variable $X$ as follows... (-200, -100, -20, 24, 104, 204). <br>
+I asked you again to use either GD or SGD to find me the value $\hat{X}$ that minimies the cost function. Which would you choose? And why? <br>
+
+<br>
+
+Hopefully, these questions above gave an intuitive sense of how SGD works. <br>
+The second question is meant to showcase a very compelling, if not obvious, use case. <br>
+The third question tries to highlight its pitfalls. <br>
+
+<br>
+<br>
+<br>
+<br>
+
+### Neural Networks Introduction, Structure, + Notation
+
+The below section contains no problems, but it is very useful for understanding neural networks / doing problems later on. <br>
+
+The neural networks (neural nets, NN) we learn this time around are called multi-layer perceptrons. <br>
+Like all neural networks, they are models that work by feeding some data $x$ through a so-called network that takes the data and proceeds to make a prediction/decision. 
+Each data point is usually multi-dimensional, i.e. $x=(x_1,x_2,...)$. <br>
+
+Let's explore the neural network structure with this image of a neural network below. <br>
+
+<div style="width:500px; height:350px">
+![Neural Net Image](nn_image.jpg)
+</div>
+
+<br>
+<br>
+
+In this image, we are feeding a single 2-dimensional data point $x = (x_1, x_2)$ through a NN to try and get a prediction. <br>
+
+Just like how a signal from your hand travels through many layers of neurons before finally reaching your brain, **a neural network contains multiple layers which process the data and make a prediction**. <br>
+<br>
+
+Our Neural Network has 4 **layers**. The input layer, two "hidden" layers, and the output layer. Aside from the input and output layer, all other layers of a neural network are "hidden" layers. <br>
+
+Each layer of the NN contains a bunch of cells called **nodes**. These are the $z_i$ the $a_i$. <br>
+The $z_i$ are "unactivated" nodes. The $a_i$ are "activated" nodes. <br>
+The "unactivated" nodes $z_i$ can be thought of as the dendrite part of the neurons in our body. They receive signals from nodes in the previous layer. <br>
+
+Some of these **signals** may be stronger, some may be weaker. The **signal strengths** coming from nodes in the previous layer are controlled by scalar **weights**, the $w_i$. <br>
+<br>
+
+The final aggregated signal that reaches our current layer's node is just a **linear combination** of the **previous nodes** (or more specifically the values of the nodes) and their respective **signal strengths** (i.e. the **weights**). <br>
+So for example, $z_1 = w_1x_1 + w_2x_2$. <br>
+
+This aggregated signal is just the value of our (unactivated) **node** in our current layer, $z_i$. <br>
+The way that a **node** in our current layer $z_i$ decides what signal/information to pass through is with a function called an **activation function**, denoted $f$ (and $g$) in the image. <br>
+The function $f$ takes the "unactivated" node as an input, and and it ouputs an "activated" node. <br>
+So for example, $f(z_2) = a_2$. <br>
+<br>
+
+The **activation function** $f$ applies a non-linear transformation to the $z_i$. <br> 
+Common activation functions include: <br>
+- the sigmoid $a_i = f(z_i) = \frac{1}{1+exp(-z_i)}$, <br>
+- the hyperbolic tangent $f(z_i) = tanh(z_i)$, <br>
+- the ReLU $f(z_i) = z_i, z_i > 0$ and $0$ otherwise. <br>
+
+$g$ is just the activation function for the output layer. $g$ may or may not equal $f$. <br>
+For binary classification problems (i.e. we want model to predict a binary outcome), $g$ is usually the sigmoid function. <br>
+<br>
+
+Note that in our NN (and all NN's), it is the "activated" node values **$a_i$ that are used as inputs for the next layer of the NN**. <br>
+They can be thought of like the axon part of a neuron. <br>
+
+The only exception to this rule is with nodes in the first layer (input layer). <br>
+The values of the nodes in this layer are just the values of each dimension of our data point -- $x_1$ and $x_2$. <br>
+These raw values are used directly to calculate the aggregate signal for the (unactivated) nodes in the next layer. <br>
+In other words, the input data will not be activated before it is used as a signal for the next layer. <br>
+The value of the activated node of the last layer, $a_5$, gives us the output, or prediction of the NN. <br>
+<br>
+
+**Recap:** <br>
+Our one data point $x$ is 2-dimensional. Each dimension value is used as an input node in the first **layer** of our NN. <br>
+The $w_i's$ are **weights**. They are the signal amplifiers/dampeners that help send the signal from one layer to the next. <br>
+The $z_i's$ and $a_i's$ make up the **nodes** for a **layer**.
+The value of each node $z_i$ is just the aggregate signal of the previous layer sent to this node. <br>
+The value (i.e. aggregate signal) for $z_i$ is a **linear combination** of the **nodes $a_j$ in the previous layer and their respective weights or signal strengths $w_j$**. <br>
+The $z_i$ get "activated" by our **activation function** $f$. This turns the $z_i$ into $a_i$. <br>
+$g$ is also an activation function, specifically for the output layer. $g$ may or may not equal $f$. <br> 
+The $z_i's$ are like the dendrites of a neuron. They receive signal from the $a_k$ nodes in the previous layer. <br>
+The $a_i's$ are like the axons of a neuron. It is their their values that get sent to the $z_j$ nodes in the next layer. <br>
+The $z_i$ and $a_i$ make up a **layer** of the NN. <br>
+
+<br>
+<br>
+<br>
+<br>
+
+### Neural Networks, the Forward Pass
+
+Recall our 4-layer NN example. <br>
+
+We have a brand new data point $x = (x_1, x_2)$. The true outcome of this data point is $y$, a binary outcome. <br>
+We first initialize some (random) values for the weights $w_i$. <br>
+Let's assume our activation functions $f$ and $g$ are both sigmoids, $f(x) = \frac{1}{1+exp(-x)}$ <br>
+Let us calculate what the prediction by our Neural Net for this data point will be. <br>
+
+**Question !** <br>
+Based on the NN structure, write out the values of $z_1$ and $z_2$ as functions of $x_i's$ and $w_i's$. <br>
+
+**Question !!** <br>
+Write out $a_1$ and $a_2$ as functions of the $z_i's$. <br>
+Does $a_1$ *directly* depend on $w_2$? <br> 
+Does $a_1$ *indirectly* depend on $w_2$? If so, through what? <br>
+Does $a_1$ *indirectly* depend on $w_4$? If so, through what? <br>
+
+**Question !** <br>
+Write out $z_3$ and $z_4$ as functions of $a_i's$ and the $w_i's$. Do $z_3$ and $z_4$ *directly* depend on anything else? <br>
+
+**Question !** <br>
+Write out $z_5$ as a function of $a_3$ and $a_4$. Write out $a_5$ in terms of $z_5$. <br> 
+
+**Question !** <br>
+What do $w_1$, $w_2$, ..., $w_{10}$ depend on? Hint: The is a trick question. <br> 
+<br>
+
+Through this exercise, we performed a "forward pass" with our data in the Neural Network. <br>
+It is exactly like it sounds. We passed our data point through every layer of our NN. <br>
+
+In each layer, the neural net took a linear combination of the signals from the previous layer and then transformed this aggregated signal into a new signal to pass onto the next layer. <br>
+
+We did this until we finally got $a_5$, the value of our output layer, i.e. the prediction of our NN. <br>
+
+Hooray! 
+
+<br>
+<br>
+<br>
+<br>
+
+### Neural Networks, Back-Propagation
+
+<div style="width:400px; height:300px">
+![Neural Net Image](nn_image.jpg)
+</div>
+
+<br>
+
+Perhaps we "Hooray!"-ed too soon. <br>
+Recall our 4-layer NN above. 
+In our setup, we started out by picking random weights $w_i$ for our NN. But these weights are probably horrible! <br>
+Our output $a_5$, i.e. our prediction, probably doesn't even come close to the true outcome of the data, $y$. <br>
+
+So, like all ML algorithms, we need to define our model performance using a cost function. <br>
+And then we need to tweak our parameters $w_i's$ in the right direction get us closer to the minimum of this cost function. <br>
+<br>
+
+Let our cost function be the Mean Squared Error. <br>
+We only have one data point, so it's really just Squared Error. Lol. <br>
+In cost function notation, this is $C(\theta|y) = (y - a_3)^2$. <br>
+<br>
+
+What is our $\theta$, our parameters? <br> 
+For our Neural Net, the $w_i's$ are the only parameters that our neural net can tweak when trying to find the optimal of the cost function for our data. <br>
+This is because the $w_i's$ don't depend on anything else. <br>
+Unlike the $z_i's$ or $a_i's$, they are not functions of anything. They just... are. <br> 
+
+You might wonder, "What about the number of layers of the NN, or the number of nodes in each layer, or even the activation functions $f$ and $g$? Can't we tweak these too?" <br>
+Ye we can, but these are the *hyperparameters* of our Neural Net. <br>
+Once these hyperparameters are "set" in our NN structure, they cannot be changed. <br>
+<br>
+
+Now that we have established what our $\theta's$ are, let's substitute it back into the cost function. <br>
+So  $C(\theta|y)$ becomes $C(w_i's|y) = (a_5 - y)^2$. <br>
+
+Like all ML, we want to improve our model prediction by minimizing our cost function through Gradient Descent. <br>
+
+Recall the general Gradient Descent formula from earlier, $\theta_{new} = \theta_{old} - \alpha \nabla C(\theta_{old})$. <br>
+
+This is a vector representation of Gradient Descent. But a gradient is the same thing as expressing--in a vector form--the partial derivatives of our cost function with respect to every single one of our parameters, our $w_i's$. <br>
+<br>
+
+So, to apply GD to minimize the cost function of our NN, we need to calculate all 10 partials. <br>
+Assume all activation functions are sigmoids. <br>
+
+Two More Notes: <br>
+1) The derivative of a sigmoid function is $f'(x) = f(x)(1-f(x))$. <br>
+2) Feel free to leave your answers in notation form as necessary. But for easy-to-calculate derivatives, please try to provide the derivative value and not the notation. <br>
+<br>
+
+**Question !!** <br>
+Let's start with $w_9$. Calculate $\frac{\partial C(w_i's|y)}{\partial w_9}$ <br>
+Hint: Use the Chain Rule (1-dimensional case). <br>
+Hint: Recall the Forward Pass exercise. How does $a_5$ depend on $w_9$? Does it depend directly on $w_5$? <br>
+Hint: The answer is $2(a_5-y)g(z_5)(1-g(z_5))a_3$. See if you can verify. <br>
+
+**Question !** <br>
+Confirm that in our NN structure, the partial with respect to $w_{10}$ has a similar setup. <br>
+<br>
+
+**Question !!!** <br>
+Next, let's do $w_5$. calculate $\frac{\partial C(w_i's|y)}{\partial w_5}$. <br>
+Hint: Use the Chain Rule (1-dimensional case). <br>
+Hint: Recall the Forward Pass exercises. How does $a_5$ depend on $w_5$? Does it depend directly on $w_5$? Or does it depend on things that depend on things that... depend on $w_5$? <br>
+Hint: The answer is $2(a_5-y)g(z_5)(1-g(z_5))w_9f(z_3)(1-f(z_3))a_1$. See if you can verify. <br>
+
+**Question !** <br>
+Confirm that in our NN structure, the partials with respect to $w_6$, $w_7$, and $w_8$ have a similar setup. <br>
+<br>
+
+**Question !!!! (CHALLENGE)**  <br>
+Now, let's do $w_1$. calculate $\frac{\partial C(w_i's|y)}{\partial w_1}$. <br>
+Hint: Use the Chain Rule (multi-dimensional case). <br>
+Hint: Recall the Forward Pass exercise. Which node(s) in the 2nd layer depend(s) on $w_1$? <br>
+Hint: Recall the Forward Pass exercise. Which node(s) in the 3rd layer depend(s) on $a_1$? <br>
+Hint: There is a plus sign in the final answer. The first part of the sum is $2(a_5-y)g(z_5)(1-g(z_5))w_9f(z_3)(1-f(z_3))w_5f(z_1)(1-f(z_1))x_1$. <br>
+See if you can verify, and also get the second part of the sum. <br>
+
+**Question !** <br>
+Confirm that in our NN structure, the partials with respect to $w_2$, $w_3$, and $w_4$ have similar setups. <br>
+<br>
+
+Wooohooo! Hooray! You did it, for real this time :-) <br>
+What you did was apply the Back-Propagation algorithm layer by layer, by hand, to get the partials of each weight $x_i$ of your NN. <br>
+Nice work again! <br>
+<br>
+
+As stated above, the vector representation of your partials with respect to each $w_i$ is just the gradient of your parameters. In other words...
+$$
+\nabla C(\theta) = \nabla C(w_{1}, w_{2},..., w_{10}) = (\frac{\partial C(w_i's|y)}{\partial w_1}, ..., \frac{\partial C(w_i's|y)}{\partial w_{10}})
+$$ 
+
+Now you can update all 10 weights in your Neural Net using Gradient Descent, since you solved the gradient :-) <br>
+
+$\nabla C(w_{1,new}, w_{2,new}, ..., w_{10,new}) = \nabla C(w_{1,old}, w_{2,old}, ..., w_{10,old}) - \alpha \nabla C(w_{1,old}, w_{2,old}, ..., w_{10,old}))$. <br>
+
+Gradient Descent has now tweaked your weights $w_i's$ in a way that will improve your prediction for your data point $x$. <br>
+Congratulations! You are one step closer to the optimal Neural Network for your data point. 
+
+<br> 
+<br>
+<br>
+<br>
+
+### Neural Networks, Concluding Thoughts
+
+Like all ML models, Neural Networks are trained/optimized by using Gradient Descent to iteratively find a set of parameters that minimizes the cost function of the prediction errors of your model. <br>
+
+Gradient Descent requires you to find the gradient of your cost function with respect to all your parameters. Back-Propagation is precisely that method to find the gradient <br>
+Once you solve the gradient, you can then apply the Gradient Descent algorithm as usual to tweak your parameters to get to a lower cost function value. <br>
+And lower cost function means better performing model. <br>
+<br>
+
+And that's all there is to it! You have now mastered the fundamentals of a Neural Network. <br>
+
+Of course, we can make them much more complicated. Let's throw in some convolutions, or make some networks that don't just move forward in calculation (i.e. the "Forward Pass" can be a bit more complicated). <br>
+
+However, the essential workhorse in allowing us to optimize a Neural Network, no matter what flavor, remains the same. <br>
+Thank you Gradient Descent and Back-Propagation for keeping me employed :-)
+
+<br>
+<br>
+<br>
+<br>
+
+### Useful References
+
+Chain Rule -- https://www.youtube.com/watch?v=9yCtWfI_Vjg&ab_channel=Dr.TreforBazett <br>
+Gradient Descent -- https://www.youtube.com/watch?v=IHZwWFHWa-w&ab_channel=3Blue1Brown <br>
+Back-Propagation Intuition -- https://www.youtube.com/watch?v=Ilg3gGewQ5U&ab_channel=3Blue1Brown <br>
+Back-Propagation Calculation -- https://www.youtube.com/watch?v=tIeHLnjs5U8&ab_channel=3Blue1Brown <br>
+Super useful link for understanding Back-Propagation, but generalized to more layers, more than one data point, and more than one output in the output layer -- http://ufldl.stanford.edu/tutorial/supervised/MultiLayerNeuralNetworks/ <br>
+Another super useful link -- http://www.cs.cornell.edu/courses/cs5740/2016sp/resources/backprop.pdf <br>
